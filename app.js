@@ -1,10 +1,25 @@
 const imageContainer = document.getElementById("image-container");
 let loader = document.getElementById("loader");
 
+let ready = false;
+let imagesLoaded = 0;
+let totalImages = 0;
+let photoArray = [];
+
 //Unsplash
-const count = 10;
+let count = 5;
 const apiKey = "xS2ZHGY2gWw9O6zJiEPmT7aEghX5s6kyj7jlCRtLoQ0";
 //const apiUrl = `https://api.unsplash.com/photos/random/?client_id=${apiKey}&count=${count}`;
+
+// Check if all image were loaded
+function imageLoaded() {
+  imagesLoaded++;
+  if (imagesLoaded === totalImages) {
+    ready = true;
+    loader.hidden = true;
+    count = 30;
+  }
+}
 
 function setAttribute(element, attribute) {
   for (const key in attribute) {
@@ -13,6 +28,8 @@ function setAttribute(element, attribute) {
 }
 // Create Elements for Links & Photos , Aff to DOM
 function displayPhotos() {
+  imagesLoaded =0;
+  totalImages = photoArray.length;
   // Run function for each object in photosArray
   photosArray.forEach((photo) => {
     // Create <a> to link to Unsplash</a>
@@ -29,10 +46,13 @@ function displayPhotos() {
     img.setAttribute("alt", photo.alt_description);
     img.setAttribute("title", photo.alt_description); */
     setAttribute(img, {
-        src: photo.urls.regular,
-        alt: photo.alt_description,
-        title: photo.alt_description
-    })
+      src: photo.urls.regular,
+      alt: photo.alt_description,
+      title: photo.alt_description,
+    });
+    // Event Listener, check when each is finished loading
+
+    img.addEventListener("load", imageLoaded);
     // Put <img> inside <a> , then put both inside imageContainer Element
     item.appendChild(img);
     imageContainer.appendChild(item);
@@ -50,6 +70,15 @@ async function getPhotos() {
     //catch error here
   }
 }
-
+// Check to see if scrolling near bottom of page, Load More Photos
+window.addEventListener("scroll", () => {
+  if (
+    window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000 &&
+    ready
+  ) {
+    ready = false;
+    getPhotos();
+  }
+});
 // On Loading
 getPhotos();
